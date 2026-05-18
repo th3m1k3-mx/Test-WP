@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Arquitectura Actual WordPress | Ferromex</title>
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --ink: #172033;
+      --muted: #5d6b82;
+      --line: #9aa8bd;
+      --panel: #ffffff;
+      --blue-900: #020C41;
+      --blue-800: #030D75;
+      --blue-600: #0000D3;
+      --pink: #F30077;
+      --red: #b42318;
+      --amber: #a66700;
+      --green: #0f8a5f;
+      --border: #d9e1ee;
+      --shadow: 0 14px 30px rgba(2, 12, 65, 0.10);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "Segoe UI", Arial, Helvetica, sans-serif;
+    }
+
+    .page {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 28px;
+    }
+
+    .header {
+      background: linear-gradient(135deg, var(--blue-900), var(--blue-800));
+      color: white;
+      padding: 28px 32px;
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      margin-bottom: 22px;
+    }
+
+    .eyebrow {
+      font-size: 12px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: #dce6ff;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 34px;
+      line-height: 1.12;
+    }
+
+    .subtitle {
+      margin-top: 12px;
+      color: #edf3ff;
+      max-width: 980px;
+      line-height: 1.55;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.2);
+      padding: 7px 10px;
+      border-radius: 999px;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      display: inline-block;
+    }
+
+    .dot-blue { background: var(--blue-600); }
+    .dot-pink { background: var(--pink); }
+    .dot-amber { background: #f3a000; }
+    .dot-green { background: #20a66b; }
+    .dot-red { background: #d92d20; }
+
+    .diagram-shell {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      padding: 22px;
+      overflow: auto;
+    }
+
+    .diagram {
+      position: relative;
+      min-width: 1320px;
+      height: 900px;
+      background:
+        linear-gradient(#eef3fb 1px, transparent 1px),
+        linear-gradient(90deg, #eef3fb 1px, transparent 1px),
+        #fbfcff;
+      background-size: 24px 24px;
+      border-radius: 18px;
+      border: 1px solid var(--border);
+    }
+
+    .connections {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .block {
+      position: absolute;
+      border: 2px solid var(--border);
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 14px;
+      box-shadow: 0 8px 18px rgba(2, 12, 65, .08);
+      z-index: 2;
+    }
+
+    .block-title {
+      font-weight: 800;
+      color: var(--blue-900);
+      font-size: 15px;
+      line-height: 1.2;
+      margin-bottom: 6px;
+    }
+
+    .block-id {
+      display: inline-block;
+      font-size: 11px;
+      letter-spacing: .02em;
+      color: white;
+      background: var(--blue-800);
+      border-radius: 999px;
+      padding: 3px 8px;
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+
+    .block-desc {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .frame {
+      background: rgba(3, 13, 117, .035);
+      border: 2px dashed rgba(3, 13, 117, .35);
+      box-shadow: none;
+    }
+
+    .vmware-frame {
+      left: 270px;
+      top: 145px;
+      width: 760px;
+      height: 680px;
+      border-color: rgba(3, 13, 117, .45);
+      background: rgba(3, 13, 117, .035);
+    }
+
+    .frame-label {
+      position: absolute;
+      top: -16px;
+      left: 22px;
+      background: var(--blue-900);
+      color: white;
+      border-radius: 999px;
+      padding: 7px 12px;
+      font-weight: 800;
+      font-size: 13px;
+      box-shadow: 0 8px 20px rgba(2, 12, 65, .18);
+    }
+
+    .vm-box {
+      left: 315px;
+      top: 205px;
+      width: 670px;
+      height: 555px;
+      background: #ffffff;
+      border-color: rgba(0, 0, 211, .35);
+    }
+
+    .vm-stack-note {
+      position: absolute;
+      left: 316px;
+      top: 770px;
+      width: 670px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: #f8faff;
+      padding: 10px 12px;
+      font-size: 12px;
+      color: var(--muted);
+      z-index: 2;
+    }
+
+    .external-left { left: 35px; }
+    .external-right { left: 1070px; }
+
+    .users { top: 210px; width: 190px; height: 92px; }
+    .dns { top: 330px; width: 190px; height: 92px; }
+    .lb { top: 450px; width: 190px; height: 110px; border-color: rgba(166, 103, 0, .55); }
+    .waf { top: 590px; width: 190px; height: 120px; border-color: rgba(180, 35, 24, .50); }
+
+    .db { top: 265px; width: 215px; height: 150px; border-color: rgba(15, 138, 95, .55); }
+    .oracle { top: 445px; width: 215px; height: 125px; border-color: rgba(166, 103, 0, .55); }
+    .backup { top: 600px; width: 215px; height: 135px; border-color: rgba(3, 13, 117, .35); }
+    .repo { top: 755px; width: 215px; height: 95px; border-color: rgba(180, 35, 24, .45); }
+
+    .rhel {
+      left: 350px;
+      top: 285px;
+      width: 165px;
+      height: 95px;
+      border-color: rgba(3, 13, 117, .35);
+    }
+
+    .webserver {
+      left: 550px;
+      top: 285px;
+      width: 165px;
+      height: 95px;
+      border-color: rgba(3, 13, 117, .35);
+    }
+
+    .php {
+      left: 750px;
+      top: 285px;
+      width: 165px;
+      height: 95px;
+      border-color: rgba(3, 13, 117, .35);
+    }
+
+    .wordpress {
+      left: 365px;
+      top: 420px;
+      width: 600px;
+      height: 300px;
+      border-color: rgba(243, 0, 119, .55);
+      background: #fffafd;
+    }
+
+    .wp-core {
+      left: 390px;
+      top: 490px;
+      width: 150px;
+      height: 80px;
+    }
+
+    .wp-plugins {
+      left: 565px;
+      top: 490px;
+      width: 160px;
+      height: 80px;
+      border-color: rgba(180, 35, 24, .45);
+    }
+
+    .wp-theme {
+      left: 750px;
+      top: 490px;
+      width: 170px;
+      height: 80px;
+      border-color: rgba(166, 103, 0, .55);
+    }
+
+    .wp-content {
+      left: 390px;
+      top: 610px;
+      width: 165px;
+      height: 80px;
+      border-color: rgba(3, 13, 117, .30);
+    }
+
+    .wp-uploads {
+      left: 580px;
+      top: 610px;
+      width: 165px;
+      height: 80px;
+      border-color: rgba(3, 13, 117, .30);
+    }
+
+    .wp-config {
+      left: 770px;
+      top: 610px;
+      width: 150px;
+      height: 80px;
+      border-color: rgba(180, 35, 24, .45);
+    }
+
+    .env-pill {
+      position: absolute;
+      border: 1px solid var(--border);
+      background: #ffffff;
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--blue-800);
+      z-index: 2;
+      box-shadow: 0 5px 12px rgba(2, 12, 65, .07);
+    }
+
+    .env-dev { left: 360px; top: 165px; }
+    .env-qa { left: 525px; top: 165px; }
+    .env-prod { left: 690px; top: 165px; }
+    .env-total { left: 850px; top: 165px; color: var(--pink); }
+
+    .note {
+      position: absolute;
+      left: 35px;
+      top: 760px;
+      width: 420px;
+      background: #fff6fb;
+      border: 1px solid #ffd0e6;
+      border-left: 5px solid var(--pink);
+      border-radius: 16px;
+      padding: 14px;
+      z-index: 3;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .note strong { color: var(--blue-900); }
+
+    .connection-label {
+      font-size: 12px;
+      fill: var(--muted);
+      font-weight: 700;
+      paint-order: stroke;
+      stroke: #fbfcff;
+      stroke-width: 4px;
+      stroke-linejoin: round;
+    }
+
+    .footer {
+      margin-top: 16px;
+      color: var(--muted);
+      font-size: 13px;
+      text-align: center;
+    }
+
+    @media print {
+      body { background: #ffffff; }
+      .page { max-width: none; padding: 0; }
+      .header, .diagram-shell { box-shadow: none; }
+      .diagram { min-width: 1320px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="header">
+      <div class="eyebrow">Arquitectura actual observada | WordPress en VM on-premises</div>
+      <h1>Diagrama técnico de situación actual de WordPress</h1>
+      <p class="subtitle">
+        Vista preliminar basada en la información declarativa validada. La base de datos se representa como componente externo al servidor WordPress, de acuerdo con el insumo confirmado. La primera versión muestra una instancia representativa y el patrón se replica para 5 instancias por ambiente.
+      </p>
+      <div class="legend">
+        <span class="legend-item"><span class="dot dot-blue"></span>Infraestructura / plataforma</span>
+        <span class="legend-item"><span class="dot dot-pink"></span>WordPress y componentes aplicativos</span>
+        <span class="legend-item"><span class="dot dot-green"></span>Base de datos externa</span>
+        <span class="legend-item"><span class="dot dot-amber"></span>Dependencia o control no confirmado</span>
+        <span class="legend-item"><span class="dot dot-red"></span>Brecha o riesgo actual</span>
+      </div>
+    </section>
+
+    <section class="diagram-shell">
+      <div class="diagram" aria-label="Diagrama de arquitectura actual WordPress Ferromex">
+        <svg class="connections" viewBox="0 0 1320 900" preserveAspectRatio="none">
+          <defs>
+            <marker id="arrow-blue" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+              <path d="M0,0 L0,6 L9,3 z" fill="#030D75" />
+            </marker>
+            <marker id="arrow-pink" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+              <path d="M0,0 L0,6 L9,3 z" fill="#F30077" />
+            </marker>
+            <marker id="arrow-green" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+              <path d="M0,0 L0,6 L9,3 z" fill="#0f8a5f" />
+            </marker>
+            <marker id="arrow-red" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+              <path d="M0,0 L0,6 L9,3 z" fill="#b42318" />
+            </marker>
+          </defs>
+
+          <!-- Flujo de entrada -->
+          <path d="M225 256 C255 256, 255 376, 315 376" stroke="#030D75" stroke-width="3" fill="none" marker-end="url(#arrow-blue)" />
+          <text x="248" y="310" class="connection-label">tráfico web</text>
+
+          <path d="M225 376 C250 376, 250 505, 315 505" stroke="#030D75" stroke-width="3" fill="none" marker-end="url(#arrow-blue)" />
+          <text x="246" y="438" class="connection-label">resolución / ruteo</text>
+
+          <path d="M225 505 C270 505, 275 505, 365 505" stroke="#030D75" stroke-width="3" fill="none" marker-end="url(#arrow-blue)" />
+          <text x="250" y="492" class="connection-label">HTTP/S</text>
+
+          <path d="M225 650 C270 650, 275 545, 365 545" stroke="#a66700" stroke-width="3" stroke-dasharray="7 6" fill="none" marker-end="url(#arrow-blue)" />
+          <text x="248" y="615" class="connection-label">WAF no confirmado</text>
+
+          <!-- Internas VM -->
+          <path d="M515 332 L550 332" stroke="#030D75" stroke-width="3" fill="none" marker-end="url(#arrow-blue)" />
+          <path d="M715 332 L750 332" stroke="#030D75" stroke-width="3" fill="none" marker-end="url(#arrow-blue)" />
+          <path d="M832 380 C832 400, 780 420, 710 420" stroke="#030D75" stroke-width="3" fill="none" marker-end="url(#arrow-blue)" />
+          <text x="660" y="405" class="connection-label">runtime PHP</text>
+
+          <!-- WordPress componentes -->
+          <path d="M540 530 L565 530" stroke="#F30077" stroke-width="3" fill="none" marker-end="url(#arrow-pink)" />
+          <path d="M725 530 L750 530" stroke="#F30077" stroke-width="3" fill="none" marker-end="url(#arrow-pink)" />
+          <path d="M465 570 L465 610" stroke="#F30077" stroke-width="3" fill="none" marker-end="url(#arrow-pink)" />
+          <path d="M645 570 L645 610" stroke="#F30077" stroke-width="3" fill="none" marker-end="url(#arrow-pink)" />
+          <path d="M830 570 L830 610" stroke="#b42318" stroke-width="3" fill="none" marker-end="url(#arrow-red)" />
+          <text x="785" y="595" class="connection-label">credenciales/config</text>
+
+          <!-- Conexión DB externa -->
+          <path d="M965 535 C1035 535, 1035 340, 1070 340" stroke="#0f8a5f" stroke-width="4" fill="none" marker-end="url(#arrow-green)" />
+          <text x="990" y="442" class="connection-label">conexión MySQL</text>
+
+          <!-- Dependencia Oracle -->
+          <path d="M965 560 C1025 560, 1025 505, 1070 505" stroke="#a66700" stroke-width="3" stroke-dasharray="8 6" fill="none" marker-end="url(#arrow-blue)" />
+          <text x="988" y="530" class="connection-label">posible integración</text>
+
+          <!-- Backup -->
+          <path d="M1178 600 C1178 555, 1178 460, 1178 415" stroke="#030D75" stroke-width="3" stroke-dasharray="7 6" fill="none" marker-end="url(#arrow-blue)" />
+          <text x="1190" y="520" class="connection-label">respaldo DB</text>
+
+          <path d="M1070 665 C1010 665, 1010 665, 920 665" stroke="#030D75" stroke-width="3" stroke-dasharray="7 6" fill="none" marker-end="url(#arrow-blue)" />
+          <text x="965" y="654" class="connection-label">respaldo archivos/config</text>
+
+          <!-- Sin repo actual -->
+          <path d="M1070 802 C1000 802, 965 710, 920 680" stroke="#b42318" stroke-width="3" stroke-dasharray="6 6" fill="none" marker-end="url(#arrow-red)" />
+          <text x="955" y="765" class="connection-label">sin Git/CI-CD actual</text>
+        </svg>
+
+        <!-- Externos izquierda -->
+        <div class="block external-left users" data-block="EXT-01-Usuarios-Consumidores">
+          <span class="block-id">EXT-01</span>
+          <div class="block-title">Usuarios / Consumidores</div>
+          <div class="block-desc">Usuarios finales que acceden a los sitios WordPress.</div>
+        </div>
+
+        <div class="block external-left dns" data-block="EXT-02-DNS-Ruteo">
+          <span class="block-id">EXT-02</span>
+          <div class="block-title">DNS / Ruteo</div>
+          <div class="block-desc">Resolución de nombres y direccionamiento hacia la capa web.</div>
+        </div>
+
+        <div class="block external-left lb" data-block="EXT-03-Balanceador-ReverseProxy">
+          <span class="block-id">EXT-03</span>
+          <div class="block-title">Balanceador / Reverse Proxy</div>
+          <div class="block-desc">Componente de entrada probable. Debe validarse ubicación, HA y terminación TLS.</div>
+        </div>
+
+        <div class="block external-left waf" data-block="EXT-04-WAF-NoConfirmado">
+          <span class="block-id">EXT-04</span>
+          <div class="block-title">WAF no confirmado</div>
+          <div class="block-desc">Control requerido por exposición web. Existencia y reglas pendientes de validación.</div>
+        </div>
+
+        <!-- Marco VMware -->
+        <div class="block frame vmware-frame" data-block="INF-01-VMware-OnPremises">
+          <div class="frame-label">INF-01 · VMware On-Premises</div>
+        </div>
+
+        <div class="env-pill env-dev" data-block="ENV-01-Desarrollo">ENV-01 · Desarrollo: 5 instancias</div>
+        <div class="env-pill env-qa" data-block="ENV-02-QA">ENV-02 · QA: 5 instancias</div>
+        <div class="env-pill env-prod" data-block="ENV-03-Produccion">ENV-03 · Producción: 5 instancias</div>
+        <div class="env-pill env-total" data-block="ENV-04-Total">ENV-04 · Total: 15 instancias</div>
+
+        <div class="block vm-box" data-block="VM-01-ServidorWordPress-Representativo">
+          <span class="block-id">VM-01</span>
+          <div class="block-title">Servidor WordPress representativo</div>
+          <div class="block-desc">Patrón actual de VM para WordPress. Se muestra una instancia representativa; el patrón se replica por ambiente.</div>
+        </div>
+
+        <div class="block rhel" data-block="VM-02-RedHat-OS">
+          <span class="block-id">VM-02</span>
+          <div class="block-title">Red Hat OS</div>
+          <div class="block-desc">Sistema operativo probable. Versión pendiente de validación.</div>
+        </div>
+
+        <div class="block webserver" data-block="VM-03-WebServer">
+          <span class="block-id">VM-03</span>
+          <div class="block-title">Web Server</div>
+          <div class="block-desc">Apache/Nginx no confirmado. Atiende tráfico HTTP/S.</div>
+        </div>
+
+        <div class="block php" data-block="VM-04-PHP-Runtime">
+          <span class="block-id">VM-04</span>
+          <div class="block-title">PHP Runtime</div>
+          <div class="block-desc">Versión de PHP pendiente. Punto crítico de compatibilidad.</div>
+        </div>
+
+        <div class="block wordpress" data-block="APP-01-WordPress-Comunitario">
+          <span class="block-id">APP-01</span>
+          <div class="block-title">WordPress comunitario</div>
+          <div class="block-desc">Aplicación principal. Incluye core, plugins, tema custom, contenido, uploads y configuración.</div>
+        </div>
+
+        <div class="block wp-core" data-block="APP-02-WordPress-Core">
+          <span class="block-id">APP-02</span>
+          <div class="block-title">Core WordPress</div>
+          <div class="block-desc">Versión pendiente.</div>
+        </div>
+
+        <div class="block wp-plugins" data-block="APP-03-Plugins-Criticos">
+          <span class="block-id">APP-03</span>
+          <div class="block-title">Plugins críticos</div>
+          <div class="block-desc">Con soporte/licencia. Riesgo alto en updates.</div>
+        </div>
+
+        <div class="block wp-theme" data-block="APP-04-Tema-Custom">
+          <span class="block-id">APP-04</span>
+          <div class="block-title">Tema custom</div>
+          <div class="block-desc">Riesgo de pérdida de layout.</div>
+        </div>
+
+        <div class="block wp-content" data-block="APP-05-WP-Content">
+          <span class="block-id">APP-05</span>
+          <div class="block-title">wp-content</div>
+          <div class="block-desc">Contenido persistente.</div>
+        </div>
+
+        <div class="block wp-uploads" data-block="APP-06-Uploads-Media">
+          <span class="block-id">APP-06</span>
+          <div class="block-title">Uploads / Media</div>
+          <div class="block-desc">Archivos cargados por usuarios.</div>
+        </div>
+
+        <div class="block wp-config" data-block="APP-07-Config-Secrets">
+          <span class="block-id">APP-07</span>
+          <div class="block-title">Config / Secrets</div>
+          <div class="block-desc">Sin manejo formal de secretos.</div>
+        </div>
+
+        <div class="vm-stack-note" data-block="NOTE-01-Patron-Replicable">
+          <strong>NOTE-01 · Patrón replicable:</strong> esta vista representa una VM WordPress. El patrón debe validarse contra las 15 instancias actuales y contra el número real de sitios por instancia.
+        </div>
+
+        <!-- Externos derecha -->
+        <div class="block external-right db" data-block="DATA-01-MySQL-Externo">
+          <span class="block-id">DATA-01</span>
+          <div class="block-title">Base de datos MySQL externa</div>
+          <div class="block-desc">La DB vive fuera del servidor WordPress. Tamaño, HA y backup pendientes.</div>
+        </div>
+
+        <div class="block external-right oracle" data-block="DATA-02-Oracle-Dependencia-Posible">
+          <span class="block-id">DATA-02</span>
+          <div class="block-title">Oracle / Integración posible</div>
+          <div class="block-desc">Dependencia no confirmada. Debe validarse durante assessment.</div>
+        </div>
+
+        <div class="block external-right backup" data-block="OPS-01-Backups-Actuales">
+          <span class="block-id">OPS-01</span>
+          <div class="block-title">Backups actuales</div>
+          <div class="block-desc">Mecanismo principal de recuperación. Rollback formal no existente.</div>
+        </div>
+
+        <div class="block external-right repo" data-block="DEV-01-Git-CICD-Ausente">
+          <span class="block-id">DEV-01</span>
+          <div class="block-title">Git / CI-CD ausente</div>
+          <div class="block-desc">No se usa Git ni pipeline actual para WordPress.</div>
+        </div>
+
+        <div class="note" data-block="NOTE-02-Lectura-Critica">
+          <strong>NOTE-02 · Lectura crítica:</strong> el problema actual no es únicamente la VM. La fragilidad principal está en ciclo de vida aplicativo, plugins, tema custom, secretos, pruebas, rollback y gobierno operativo.
+        </div>
+      </div>
+    </section>
+
+    <div class="footer">
+      Diagrama v0.1 · FASA-Caso-01-FXE-OCPCiclo01-Wordpress-Assessment-Inicial · Los nombres visibles coinciden con atributos <code>data-block</code> para facilitar ajustes posteriores.
+    </div>
+  </main>
+</body>
+</html>
